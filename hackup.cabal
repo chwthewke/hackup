@@ -10,6 +10,16 @@ executable hackup
   build-depends:   
                    base >= 4,
                    lens >=4.0.7 && <4.1,
-                   validation >=0.3.2 && <0.4
+                   validation >=0.3.2 && <0.4,
+                   optparse-applicative >=0.5.2 && <0.6,
+                   mtl >=2.1.2 && <2.2,
+                   transformers >=0.3.0 && <0.4,
+                   mmorph >=1.0.2 && <1.1
   ghc-options:     -Wall
+  other-modules:   
+                   Hackup.Opts,
+                   Hackup.Types,
+                   Hackup.Config,
+                   Hackup.Action,
+                   Hackup.Driver
 
