@@ -6,7 +6,7 @@ import Hackup.Opts
 import Hackup.Action
 
 runAction :: Opts -> Action -> TryIO [String]
-runAction = undefined
+runAction _ _ = failWith "Failed explicitly at runAction"
 
 
 runActions :: Opts ->[Action] -> TryIO ()

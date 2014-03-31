@@ -1,3 +1,5 @@
+{-# LANGUAGE Rank2Types #-}
+ 
 module Hackup.Types where
 
 import Control.Monad
@@ -16,3 +18,6 @@ generalizeTry = hoist generalize
 
 doOrDoNot :: TryIO () -> IO ()
 doOrDoNot x = void . runErrorT . catchError x $ lift . putStrLn
+
+failWith :: Monad m => String -> forall a. TryT m a
+failWith s = ErrorT . return $ Left s

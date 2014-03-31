@@ -6,5 +6,5 @@ import Hackup.Config
 data Action = Action {} deriving (Show, Eq)
 
 planActions :: Config -> Try [[Action]]
-planActions = undefined
+planActions _ = failWith "Failed explicitly at planActions"
 

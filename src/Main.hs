@@ -9,7 +9,7 @@ import Hackup.Config
 import Hackup.Action
 import Hackup.Driver
 
-main::IO()
+main :: IO()
 main = doOrDoNot $ do opts <- cmdOpts 
                       config <- readConfig $ configFile opts
                       actions <- generalizeTry $ planActions config
