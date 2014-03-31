@@ -1,17 +1,15 @@
 module Hackup.Opts (Opts, cmdOpts, configFile, dryRun) where
 
 import Hackup.Types
+import Control.Monad
+import Control.Monad.Trans.Error
 import Options.Applicative
-import Options.Applicative.Extra
 import System.Environment
 
 data Opts = Opts { configFile :: String
                  , dryRun :: Bool
 --                 , quiet :: Bool
                  } deriving (Show, Eq)
-
-programName :: String
-programName = "hackup"
 
 parser :: Parser Opts
 parser = Opts
@@ -31,9 +29,12 @@ parserInfo = info (helper <*> parser) (
     <> progDesc "Create configurable backups."
     <> header "hackup 0.1")
 
-co :: IO (Maybe Opts)
-co = getArgs >>= return . execParserMaybe parserInfo
+parseCommandLine :: [String] -> IO (Either String Opts)
+parseCommandLine args =
+  case execParserPure (prefs idm) parserInfo args
+    of Success opts        -> return $ Right opts
+       Failure f           -> liftM (Left . fst . execFailure f) getProgName
+       CompletionInvoked _ -> error "unexpected completion invoked"
 
-cmdOpts :: TryT IO Opts
-cmdOpts = undefined
-
+cmdOpts :: TryIO Opts
+cmdOpts = ErrorT $ getArgs >>= parseCommandLine
