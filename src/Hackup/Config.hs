@@ -4,6 +4,7 @@ module Hackup.Config (Config, readConfig) where
 
 import Hackup.Types
 import Control.Lens
+import Data.Yaml
 
 data Config = Config { _backupRootDir :: FilePath
                      , _defaultKeep :: Integer
