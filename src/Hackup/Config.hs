@@ -1,10 +1,12 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Hackup.Config (Config, readConfig) where
 
 import Hackup.Types
 import Control.Lens
 import Data.Yaml
+import Data.Text
 
 data Config = Config { _backupRootDir :: FilePath
                      , _defaultKeep :: Integer
@@ -30,8 +32,17 @@ data FileSelector = Glob String | Regex String deriving (Show, Eq)
 
 makeLenses ''Config
 makeLenses ''Section
-makeLenses ''Command                       
+makeLenses ''Command
 
+instance FromJSON FileSelector where
+  parseJSON (String s)
+    | "glob:" `isPrefixOf` s =
+      return . Glob $ unpack (Data.Text.drop 5 s)
+    | "regex:" `isPrefixOf` s =
+      return . Regex $ unpack (Data.Text.drop 6 s)
+    | otherwise = return . Glob $ unpack s
+--  parseJSON _ = mzero
+  
 readConfig :: FilePath -> TryIO Config
 readConfig _ = failWith "Failed explicilty at readConfig"
 

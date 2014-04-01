@@ -15,7 +15,8 @@ executable hackup
                    mtl >=2.1.2 && <2.2,
                    transformers >=0.3.0 && <0.4,
                    mmorph >=1.0.2 && <1.1,
-                   yaml >= 0.8.8.1 && < 0.9
+                   yaml >= 0.8.8.1 && < 0.9,
+                   text >= 1.1.0.1 && < 1.2
   ghc-options:     -Wall
   other-modules:   
                    Hackup.Opts,
