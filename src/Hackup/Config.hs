@@ -1,17 +1,19 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Hackup.Config (Config, readConfig,
-                      backupRootDir, defaultKeep, sections,
-                      Section, name, archiveName, archiveDir, keep, items, before, after,
-                      Command, command, workingDir, ignoreFailure,
-                      FileSelector(..)) where
+module Hackup.Config (Config(Config), readConfig,
+                      backupRootDir, defaultKeep, sections, sectionFromJSON,
+                      Section(Section), name, archiveName, archiveDir, keep, items, before, after,
+                      Command(Command), command, workingDir, ignoreFailure,
+                      FileSelector(Glob, Regex)) where
 
 import Hackup.Types
 import Control.Lens
 import Control.Monad
 import Control.Monad.Trans.Error
 import Control.Applicative
+import Data.Map (Map)
+import qualified Data.Map as Map
 import Data.Maybe (mapMaybe)
 import Data.Yaml
 import Data.Text (Text, isPrefixOf, drop, length, unpack)
@@ -20,7 +22,7 @@ import Data.HashMap.Strict
 
 data Config = Config { _backupRootDir :: FilePath
                      , _defaultKeep :: Integer
-                     , _sections :: [Section] 
+                     , _sections :: Map String Section 
                      } deriving (Show, Eq)
 
 
@@ -61,22 +63,24 @@ instance FromJSON Command where
                            v .:? "ignoreFailure" .!= False
   parseJSON _          = mzero
 
-sectionFromJSON :: Text -> Value -> Parser Section
-sectionFromJSON name' (Object v) = Section (unpack name') <$>
-                                     v .:? "archive" <*>
-                                     v .:? "targetDir" <*>
-                                     v .:? "keep" <*>
-                                     v .: "contents" <*>
-                                     v .:? "before" .!= [] <*>
-                                     v .:? "after" .!= []
-sectionFromJSON _ _             = mzero
+sectionFromJSON :: Text -> Value -> Parser (String, Section)
+sectionFromJSON nameText (Object v) = let name' = unpack nameText in
+                                      (\ x -> (name', x)) <$> (
+                                      Section name' <$>
+                                        v .:? "archive" <*>
+                                        v .:? "targetDir" <*>
+                                        v .:? "keep" <*>
+                                        v .: "contents" <*>
+                                        v .:? "before" .!= [] <*>
+                                        v .:? "after" .!= [])
+sectionFromJSON _ _                 = mzero
 
 instance FromJSON Config where
   parseJSON (Object v) = Config <$>
                            v .: backupRootDirKey <*>
                            v .:? defaultKeepKey .!= 7 <*>
                            sectionsFromJSON v
-    where sectionsFromJSON h = mapM (\ k -> (h .: k) >>= sectionFromJSON k) $ otherKeys h
+    where sectionsFromJSON h = liftM Map.fromList . mapM (\ k -> (h .: k) >>= sectionFromJSON k) $ otherKeys h
           otherKeys = Prelude.filter (\ x -> x `notElem` [backupRootDirKey, defaultKeepKey]) . keys
           defaultKeepKey = "keep"
           backupRootDirKey = "rootDir"

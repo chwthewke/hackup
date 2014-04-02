@@ -17,6 +17,7 @@ executable hackup
                    mmorph >=1.0.2 && <1.1,
                    yaml >=0.8.8.1 && < 0.9,
                    text >=1.1.0.1 && < 1.2,
+                   containers >= 0.5.0.0 && < 0.6,
                    unordered-containers >=0.2.3.3 && <0.3,
                    bytestring >=0.10.0.2 && <0.11
   ghc-options:     -Wall
@@ -26,4 +27,20 @@ executable hackup
                    Hackup.Config,
                    Hackup.Action,
                    Hackup.Driver
+
+test-suite HackupTests
+  type:            exitcode-stdio-1.0
+  main-is:         HackupTests.hs
+  ghc-options:     -Wall -rtsopts
+  build-depends:   
+                   base >= 4,
+                   aeson >= 0.7.0.2 && < 0.8,
+                   HTF >= 0.11.2.1 && < 0.12,
+                   QuickCheck >=2.6 && <2.7
+  other-modules:   
+                   Hackup.Config,
+                   Hackup.ConfigTest
+  hs-source-dirs:  
+                   src,
+                   testsuite
 
