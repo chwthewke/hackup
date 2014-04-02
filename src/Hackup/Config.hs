@@ -1,15 +1,22 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Hackup.Config (Config, readConfig) where
+module Hackup.Config (Config, readConfig,
+                      backupRootDir, defaultKeep, sections,
+                      Section, name, archiveName, archiveDir, keep, items, before, after,
+                      Command, command, workingDir, ignoreFailure,
+                      FileSelector(..)) where
 
 import Hackup.Types
 import Control.Lens
 import Control.Monad
+import Control.Monad.Trans.Error
 import Control.Applicative
 import Data.Maybe (mapMaybe)
 import Data.Yaml
-import Data.Text
+import Data.Text (Text, isPrefixOf, drop, length, unpack)
+import Data.ByteString (readFile)
+import Data.HashMap.Strict
 
 data Config = Config { _backupRootDir :: FilePath
                      , _defaultKeep :: Integer
@@ -28,7 +35,7 @@ data Section = Section { _name :: String
                        
 data Command = Command { _command :: String
                        , _workingDir :: Maybe FilePath
-                       , _fail :: Bool 
+                       , _ignoreFailure :: Bool 
                        } deriving (Show, Eq)
 
 data FileSelector = Glob String | Regex String deriving (Show, Eq)
@@ -51,25 +58,37 @@ instance FromJSON Command where
   parseJSON (Object v) = Command <$>
                            v .: "command" <*>
                            v .:? "workingDir" <*>
-                           v .:? "fail" .!= True
+                           v .:? "ignoreFailure" .!= False
   parseJSON _          = mzero
 
 sectionFromJSON :: Text -> Value -> Parser Section
-sectionFromJSON name (Object v) = Section (unpack name) <$>
-                                    v .:? "archive" <*>
-                                    v .:? "targetDir" <*>
-                                    v .:? "keep" <*>
-                                    v .: "contents" <*>
-                                    v .:? "before" .!= [] <*>
-                                    v .:? "after" .!= []
+sectionFromJSON name' (Object v) = Section (unpack name') <$>
+                                     v .:? "archive" <*>
+                                     v .:? "targetDir" <*>
+                                     v .:? "keep" <*>
+                                     v .: "contents" <*>
+                                     v .:? "before" .!= [] <*>
+                                     v .:? "after" .!= []
+sectionFromJSON _ _             = mzero
 
 instance FromJSON Config where
   parseJSON (Object v) = Config <$>
-                           v .: "rootDir" <*>
-                           v .:? "keep" .!= 7 <*>
-                           undefined 
+                           v .: backupRootDirKey <*>
+                           v .:? defaultKeepKey .!= 7 <*>
+                           sectionsFromJSON v
+    where sectionsFromJSON h = mapM (\ k -> (h .: k) >>= sectionFromJSON k) $ otherKeys h
+          otherKeys = Prelude.filter (\ x -> x `notElem` [backupRootDirKey, defaultKeepKey]) . keys
+          defaultKeepKey = "keep"
+          backupRootDirKey = "rootDir"
+          
   parseJSON _          = mzero
 
-readConfig :: FilePath -> TryIO Config
-readConfig _ = failWith "Failed explicilty at readConfig"
 
+readConfig :: FilePath -> TryIO Config
+readConfig = ErrorT . liftM decodeEither . Data.ByteString.readFile
+
+
+
+
+
+ 
