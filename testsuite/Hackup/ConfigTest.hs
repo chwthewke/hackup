@@ -6,10 +6,13 @@ import Hackup.Config
 
 import Prelude hiding (mapM, sequence)
 import Test.Framework
+import Data.List (nub)
+import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe (catMaybes)
 import Data.Traversable
-import Data.Text
+import Data.Text (Text)
+import qualified Data.Text as Text
 import Data.Yaml
 import Data.Aeson.Types (Pair)
 import Control.Lens hiding ((.=))
@@ -56,7 +59,7 @@ mkJSONG = liftM (object . catMaybes) . sequence
 -- FileSelector instances
 
 prefixFileSelector :: String -> String -> Value
-prefixFileSelector p fs = String . pack $ p ++ fs
+prefixFileSelector p fs = String . Text.pack $ p ++ fs
 
 fileSelectorToJSON :: FileSelector -> Bool -> Value
 fileSelectorToJSON (Glob x) True  = prefixFileSelector "glob:" x
@@ -101,13 +104,16 @@ instance ToJSONG Section where
        ]
 
 instance Arbitrary Section where
-  arbitrary = Section <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary <*> 
+  arbitrary = Section <$> 
+                arbitrary <*> 
+                arbitrary <*> 
+                arbitrary <*> 
                 resize 4 arbitrary <*> 
                 resize 4 arbitrary <*> 
                 resize 4 arbitrary 
 
 prop_sectionDecode :: WithJSON Section -> Bool
-prop_sectionDecode (WithJSON (section, json)) = parseEither (sectionFromJSON . pack $ section ^. name) json == Right (section ^. name, section) 
+prop_sectionDecode = defPropDecode 
 
 -- Config instances
 
@@ -120,13 +126,19 @@ instance ToJSONG Config where
                        mkPair_ "rootDir" $ config ^. backupRootDir,
                        mkPair_ "keep" $ config ^. defaultKeep
                        ] 
-          sectionsJSON = mapM sectionJSONPair $ Map.elems (config ^. sections)
-          sectionJSONPair section = ((pack $ section ^. name) .=) <$> toJSONG bools section
+          sectionsJSON = mapM sectionJSONPair $ Map.toList (config ^. sections)
+          sectionJSONPair (name, section) = (Text.pack name .=) <$> toJSONG bools section
 
+newtype StringMap a = StringMap { getStringMap :: Map String a }
+
+instance Arbitrary a => Arbitrary (StringMap a) where
+  arbitrary = sized arbSized
+    where arbSized n = do keys <- resize n $ listOf arbitrary `suchThat` (\l -> l == nub l)
+                          values <- vector (length keys)
+                          return . StringMap . Map.fromList $ zip keys values 
     
 instance Arbitrary Config where
-  arbitrary = Config <$> arbitrary <*> arbitrary <*> (resize 4 . liftM sectionMapFromList) arbitrary
-    where sectionMapFromList sxs = Map.fromList [(s ^. name, s) | s <- sxs]
+  arbitrary = Config <$> arbitrary <*> arbitrary <*> resize 4 (getStringMap <$> arbitrary)
 
 prop_configDecode :: WithJSON Config -> Bool
 prop_configDecode = defPropDecode
