@@ -1,6 +1,6 @@
 {-# LANGUAGE Rank2Types #-}
  
-module Hackup.Types where
+module Hackup.Types (module Hackup.Types, Control.Monad.Trans.Error.ErrorT(ErrorT)) where
 
 import Control.Monad
 import Control.Monad.Morph
@@ -17,7 +17,11 @@ generalizeTry :: Monad m => Try a -> TryT m a
 generalizeTry = hoist generalize
 
 doOrDoNot :: TryIO () -> IO ()
-doOrDoNot x = void . runErrorT . catchError x $ lift . putStrLn
+doOrDoNot = void . runErrorT . flip catchError (lift . putStrLn)
+
+tryT :: (Monad m) => Either String a -> TryT m a
+tryT = ErrorT . return
 
 failWith :: Monad m => String -> forall a. TryT m a
-failWith s = ErrorT . return $ Left s
+failWith = tryT . Left
+

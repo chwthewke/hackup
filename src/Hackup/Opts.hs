@@ -2,7 +2,6 @@ module Hackup.Opts (Opts, cmdOpts, configFile, dryRun) where
 
 import Hackup.Types
 import Control.Monad
-import Control.Monad.Trans.Error
 import Options.Applicative
 import System.Environment
 

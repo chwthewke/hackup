@@ -19,18 +19,23 @@ executable hackup
                    text >=1.1.0.1 && < 1.2,
                    containers >= 0.5.0.0 && < 0.6,
                    unordered-containers >=0.2.3.3 && <0.3,
-                   bytestring >=0.10.0.2 && <0.11
+                   bytestring >=0.10.0.2 && <0.11,
+                   semigroups >=0.12.2 && <0.13,
+                   Glob >=0.7.2 && <0.8
   ghc-options:     -Wall
   other-modules:   
                    Hackup.Opts,
                    Hackup.Types,
                    Hackup.Config,
                    Hackup.Action,
-                   Hackup.Driver
+                   Hackup.Driver,
+                   Hackup.Config.Validation,
+                   Hackup.Config.Types,
+                   Hackup.Config.Parser,
+                   Hackup.Config.Fields
 
 test-suite HackupTests
   type:            exitcode-stdio-1.0
-  main-is:         HackupTests.hs
   ghc-options:     -Wall -rtsopts
   build-depends:   
                    base >= 4,
@@ -39,8 +44,13 @@ test-suite HackupTests
                    QuickCheck >=2.6 && <2.7
   other-modules:   
                    Hackup.Config,
-                   Hackup.ConfigTest
+                   Hackup.Config.Validation,
+                   Hackup.Config.Types,
+                   Hackup.Config.Parser,
+                   Hackup.Config.ParserTest,
+                   Hackup.Config.Fields
   hs-source-dirs:  
                    src,
                    testsuite
+  main-is:         HackupTests.hs
 

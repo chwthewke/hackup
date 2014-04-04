@@ -1,9 +1,10 @@
 {-# OPTIONS_GHC -F -pgmF htfpp #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Hackup.ConfigTest where
-import Hackup.Config
 
+module Hackup.Config.ParserTest where
+
+import Hackup.Config
 import Prelude hiding (mapM, sequence)
 import Test.Framework
 import Data.List (nub)
@@ -61,18 +62,18 @@ mkJSONG = liftM (object . catMaybes) . sequence
 prefixFileSelector :: String -> String -> Value
 prefixFileSelector p fs = String . Text.pack $ p ++ fs
 
-fileSelectorToJSON :: FileSelector -> Bool -> Value
+fileSelectorToJSON :: RawFileSelector -> Bool -> Value
 fileSelectorToJSON (Glob x) True  = prefixFileSelector "glob:" x
 fileSelectorToJSON (Glob x) False = prefixFileSelector "" x
 fileSelectorToJSON (Regex x) _    = prefixFileSelector "regex:" x
 
-instance ToJSONG FileSelector where
+instance ToJSONG RawFileSelector where
   toJSONG bs fs = liftM (fileSelectorToJSON fs) bs   
     
-instance Arbitrary FileSelector where
+instance Arbitrary RawFileSelector where
   arbitrary = oneof [ fmap Glob arbitrary, fmap Regex arbitrary ]
 
-prop_fileSelectorDecode :: WithJSON FileSelector -> Bool
+prop_fileSelectorDecode :: WithJSON RawFileSelector -> Bool
 prop_fileSelectorDecode = defPropDecode
 
 -- Command instances
@@ -93,7 +94,7 @@ prop_commandDecode = defPropDecode
 
 -- Section instances
 
-instance ToJSONG Section where
+instance ToJSONG a => ToJSONG (Section' a) where
   toJSONG bools section = mkJSONG
       [mkPairMaybe_ "archive" $ section ^. archiveName,
        mkPairMaybe_ "targetDir" $ section ^. archiveDir,
@@ -103,8 +104,8 @@ instance ToJSONG Section where
        mkPair bools "after" $ section ^. after
        ]
 
-instance Arbitrary Section where
-  arbitrary = Section <$> 
+instance Arbitrary a => Arbitrary (Section' a) where
+  arbitrary = Section' <$> 
                 arbitrary <*> 
                 arbitrary <*> 
                 arbitrary <*> 
@@ -112,13 +113,13 @@ instance Arbitrary Section where
                 resize 4 arbitrary <*> 
                 resize 4 arbitrary 
 
-prop_sectionDecode :: WithJSON Section -> Bool
+prop_sectionDecode :: WithJSON (Section' RawFileSelector) -> Bool
 prop_sectionDecode = defPropDecode 
 
 -- Config instances
 
 
-instance ToJSONG Config where
+instance ToJSONG a => ToJSONG (Config' a) where
   toJSONG bools config = do rs <- rootSec
                             sj <- sectionsJSON
                             return . object $ (rs ++ sj) 
@@ -137,10 +138,10 @@ instance Arbitrary a => Arbitrary (StringMap a) where
                           values <- vector (length keys)
                           return . StringMap . Map.fromList $ zip keys values 
     
-instance Arbitrary Config where
-  arbitrary = Config <$> arbitrary <*> arbitrary <*> resize 4 (getStringMap <$> arbitrary)
+instance Arbitrary a => Arbitrary (Config' a) where
+  arbitrary = Config' <$> arbitrary <*> arbitrary <*> resize 4 (getStringMap <$> arbitrary)
 
-prop_configDecode :: WithJSON Config -> Bool
+prop_configDecode :: WithJSON RawConfig -> Bool
 prop_configDecode = defPropDecode
 
 
