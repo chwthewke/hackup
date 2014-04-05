@@ -52,6 +52,10 @@ commandWorkingDirField = ConfigField "workingDir"
 commandIgnoreFailureField :: ConfigField
 commandIgnoreFailureField = ConfigField "ignoreFailure"
 
- 
+itemBaseDirField :: ConfigField
+itemBaseDirField = ConfigField "baseDir"
+
+itemFilesField :: ConfigField
+itemFilesField = ConfigField "files" 
 
 

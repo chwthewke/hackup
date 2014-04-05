@@ -22,9 +22,19 @@ extractSelectorType fs = Prelude.head $ mapMaybe matchSelector [ ("glob:", Glob)
           | s `isPrefixOf` fs = Just . st . Text.unpack $ Text.drop (Text.length s) fs
           | otherwise         = Nothing
 
+-- There are a number of problems, including but not limited to
+-- mzeros are not informative, try with*
+-- no accumulation of errors, which is baaad
+
 instance FromJSON RawFileSelector where
   parseJSON (String s) = return $ extractSelectorType s
   parseJSON _ = mzero
+
+instance FromJSON a => FromJSON (Item' a) where
+  parseJSON (Object v) = Item' <$>
+                           v .: itemBaseDirField <*>
+                           v .:? itemFilesField
+  parseJSON _          = mzero
 
 instance FromJSON Command where
   parseJSON (Object v) = Command <$>

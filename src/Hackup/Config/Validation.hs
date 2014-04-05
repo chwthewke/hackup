@@ -31,8 +31,10 @@ positiveInt (ConfigField n) x | x <= 0 = singleError $ n ++ " must be > 0, was "
                               | otherwise = _Success # ()
                               
 validateFileSelector :: RawFileSelector -> V FileSelector
-validateFileSelector (Glob "") = undefined
-                              
+validateFileSelector (Glob "") = singleError "Empty glob"
+validateFileSelector (Regex "") = singleError "Empty regex"
+validateFileSelector _ = undefined
+
 validate' :: RawConfig -> V Config
 validate' = undefined 
 

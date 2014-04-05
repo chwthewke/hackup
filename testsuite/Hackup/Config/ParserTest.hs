@@ -76,6 +76,8 @@ instance Arbitrary RawFileSelector where
 prop_fileSelectorDecode :: WithJSON RawFileSelector -> Bool
 prop_fileSelectorDecode = defPropDecode
 
+-- TODO ConfigField
+
 -- Command instances
 
 instance ToJSONG Command where
@@ -91,6 +93,19 @@ instance Arbitrary Command where
   
 prop_commandDecode :: WithJSON Command -> Bool
 prop_commandDecode = defPropDecode
+
+-- Item instances
+
+instance ToJSONG a => ToJSONG (Item' a) where
+  toJSONG bools item = mkJSONG [
+    mkPair_ "baseDir" $ item ^. itemBaseDir,
+    mkPairMaybe bools "files" $ item ^. itemContents ]
+
+instance Arbitrary a => Arbitrary (Item' a) where
+  arbitrary = Item' <$> arbitrary <*> arbitrary
+
+prop_itemDecode :: WithJSON (Item' RawFileSelector) -> Bool
+prop_itemDecode = defPropDecode
 
 -- Section instances
 
