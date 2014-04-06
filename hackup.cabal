@@ -24,15 +24,14 @@ executable hackup
                    Glob >=0.7.2 && <0.8
   ghc-options:     -Wall
   other-modules:   
+                   Hackup.Action,
+                   Hackup.Config,
+                   Hackup.Config.Fields,
+                   Hackup.Config.Types,
+                   Hackup.Driver,
                    Hackup.Opts,
                    Hackup.Types,
-                   Hackup.Config,
-                   Hackup.Action,
-                   Hackup.Driver,
-                   Hackup.Config.Validation,
-                   Hackup.Config.Types,
-                   Hackup.Config.Parser,
-                   Hackup.Config.Fields
+                   Hackup.Config.Parser
 
 test-suite HackupTests
   type:            exitcode-stdio-1.0
@@ -41,14 +40,14 @@ test-suite HackupTests
                    base >= 4,
                    aeson >= 0.7.0.2 && < 0.8,
                    HTF >= 0.11.2.1 && < 0.12,
-                   QuickCheck >=2.6 && <2.7
+                   QuickCheck >=2.6 && <2.7,
+                   vector >=0.10.0 && <0.11
   other-modules:   
                    Hackup.Config,
-                   Hackup.Config.Validation,
+                   Hackup.Config.Fields,
                    Hackup.Config.Types,
                    Hackup.Config.Parser,
-                   Hackup.Config.ParserTest,
-                   Hackup.Config.Fields
+                   Hackup.Config.ParserTest
   hs-source-dirs:  
                    src,
                    testsuite

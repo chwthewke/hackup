@@ -1,23 +1,11 @@
 module Hackup.Config.Fields where
 
-import Data.Yaml (FromJSON, Object, Parser)
-import qualified Data.Yaml
 import Data.Text (Text, pack)
 
-newtype ConfigField = ConfigField { _fieldName :: String } deriving (Show, Eq, Ord)
+newtype ConfigField = ConfigField { fieldName :: String } deriving (Show, Eq, Ord)
 
-class AText a where
-  asText :: a -> Text
-  
-instance AText Text where asText = id
-
-instance AText ConfigField where asText = pack . _fieldName
-
-(.:) :: (FromJSON a, AText k) => Object -> k -> Parser a
-obj .: n = (Data.Yaml..:) obj $ asText n
-
-(.:?) :: (FromJSON a, AText k) => Object -> k -> Parser (Maybe a)
-obj .:? n = (Data.Yaml..:?) obj $ asText n
+fieldText :: ConfigField -> Text
+fieldText = pack . fieldName
 
 rootDirField :: ConfigField
 rootDirField = ConfigField "rootDir"

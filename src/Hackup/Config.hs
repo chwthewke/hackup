@@ -5,10 +5,11 @@ module Hackup.Config (module Hackup.Config.Types,
 import Hackup.Types
 import Hackup.Config.Types
 import Hackup.Config.Parser
-import Hackup.Config.Validation
+import qualified Data.ByteString as ByteString
+import Control.Monad
 
 readConfig :: FilePath -> TryIO Config
-readConfig f = parseConfig f >>= generalizeTry . validate
+readConfig = ErrorT . liftM parseConfig . ByteString.readFile
 
 
 
