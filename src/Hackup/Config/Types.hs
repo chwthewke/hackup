@@ -44,7 +44,7 @@ type Item = Item' FileSelector
 
 data RawFileSelector = Glob String | Regex String deriving (Show, Eq)
 
-newtype FileSelector = FileSelector { _runFileSelector :: FilePath -> FilePath -> [FilePath] }
+newtype FileSelector = FileSelector { runFileSelector :: IO [FilePath] }
 
 makeLenses ''Config'
 makeLenses ''Section'
