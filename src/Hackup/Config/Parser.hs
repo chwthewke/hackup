@@ -103,8 +103,6 @@ getFieldRep' field p = fieldKey field . to (
 withDefault :: a -> V (Maybe a) -> V a
 withDefault a vma = fromMaybe a <$> vma      
 
-infixl 9 .|
-
 (.|) :: Getter a (V (Maybe b)) -> b -> Getter a (V b)
 (.|) g a = g . to (withDefault a)
 

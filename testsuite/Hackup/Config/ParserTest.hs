@@ -16,6 +16,7 @@ import Data.Aeson (Value)
 import Data.Aeson.Lens
 import Data.Foldable
 import Data.List (nub)
+import Data.Maybe (fromMaybe)
 import qualified Data.Map as Map
 import qualified Data.Text as Text
 import Data.Text.Lens
@@ -79,7 +80,7 @@ instance ArbFromValue Item where
   arbFromValue = do fsv          <- arbitrary
                     itemBaseDir' <- getNonEmptyString <$> arbitrary
                     return $ ValueResult (
-                      mkObject $ [(fieldName itemBaseDirField, mkString itemBaseDir')] ++
+                      mkObject $ (fieldName itemBaseDirField, mkString itemBaseDir') :
                                  maybeField itemFilesField getValue fsv) (
                       Item itemBaseDir' <$> traverse getResult fsv)
 
@@ -96,7 +97,7 @@ instance ArbFromValue Command where
                       mkObject $ [(fieldName commandField, _String # Text.pack command')] ++
                                  maybeField commandWorkingDirField mkString workingDir' ++
                                  maybeField commandIgnoreFailureField (_Bool #) ignoreFailure') (
-                      _Success # Command command' workingDir' (maybe False id ignoreFailure'))
+                      _Success # Command command' workingDir' (fromMaybe False ignoreFailure'))
 
 prop_commandFromJSON :: ValueResult Command -> Bool
 prop_commandFromJSON = defParseProp commandFromJSON
