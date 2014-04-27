@@ -22,6 +22,7 @@ import Data.Vector.Lens
 import Data.Text.Lens
 import Hackup.Config.Types
 import Hackup.Config.Fields
+import Hackup.Config.Selectors
 
 
 type V = AccValidation (NonEmpty String)
@@ -145,13 +146,9 @@ rawFileSelectorFromJSON =
   asV "string matching (glob:|regex:)?.+ expected" .
     parseRawFileSelector              
 
--- dummy validation
-validateFileSelector :: RawFileSelector -> V FileSelector
-validateFileSelector r = pure $ FileSelector (const $ return []) r
-
 
 fileSelectorFromJSON :: AsValue s => s -> V FileSelector
-fileSelectorFromJSON = bindV validateFileSelector . rawFileSelectorFromJSON
+fileSelectorFromJSON = fmap fileSelector . rawFileSelectorFromJSON
 
 -- Item
 

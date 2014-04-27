@@ -22,6 +22,7 @@ executable hackup
                    bytestring >= 0.10.0.2 && < 0.11,
                    semigroups >= 0.12.2 && < 0.13,
                    filemanip >= 0.3.6.2 && < 0.4,
+                   Glob >= 0.7.2 && < 0.8,
                    regex-base >= 0.93.2 && < 0.94,
                    regex-tdfa >= 1.2.0 && < 1.3.0
   ghc-options:     -Wall
@@ -33,7 +34,8 @@ executable hackup
                    Hackup.Driver,
                    Hackup.Opts,
                    Hackup.Types,
-                   Hackup.Config.Parser
+                   Hackup.Config.Parser,
+                   Hackup.Config.Selectors
 
 test-suite HackupTests
   type:            exitcode-stdio-1.0
@@ -43,13 +45,20 @@ test-suite HackupTests
                    aeson >= 0.7.0.2 && < 0.8,
                    HTF >= 0.11.3.4 && < 0.12,
                    QuickCheck >= 2.7.3 && < 2.8,
-                   vector >= 0.10.0 && < 0.11
+                   vector >= 0.10.0 && < 0.11,
+                   filepath >= 1.3.0.1 && < 1.4,
+                   directory >= 1.2.1.0 && < 1.3,
+                   directory-layout >= 0.4.0.1 && < 0.5,
+                   temporary >= 1.2.0.2 && < 1.3,
+                   Cabal == 1.18.* 
   other-modules:   
                    Hackup.Config,
                    Hackup.Config.Fields,
                    Hackup.Config.Types,
                    Hackup.Config.Parser,
-                   Hackup.Config.ParserTest
+                   Hackup.Config.ParserTest,
+                   Hackup.Config.Selectors,
+                   Hackup.Config.SelectorsTest
   hs-source-dirs:  
                    src,
                    testsuite

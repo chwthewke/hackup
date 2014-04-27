@@ -10,6 +10,7 @@ import Prelude hiding (concat)
 import Hackup.Config.Fields
 import Hackup.Config.Types
 import Hackup.Config.Parser
+import Hackup.Config.Selectors
 import Control.Applicative
 import Control.Lens
 import Data.Aeson (Value)
@@ -69,7 +70,7 @@ mkObject = (_Object #) . HashMap.fromList . (traverse . _1 %~ Text.pack)
 instance ArbFromValue FileSelector where
   arbFromValue = do m      <- listOf1 arbitrary
                     (p, g) <- Test.Framework.elements fileSelectorPrefixes
-                    return $ ValueResult (mkString (p ++ m)) (validateFileSelector $ g m)
+                    return $ ValueResult (mkString (p ++ m)) (_Success # fileSelector (g m))
                     
 prop_fileSelectorFromJSON :: ValueResult FileSelector -> Bool
 prop_fileSelectorFromJSON = defParseProp fileSelectorFromJSON
