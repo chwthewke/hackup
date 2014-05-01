@@ -1,6 +1,6 @@
 module Hackup.Config.Fields where
 
-import Data.Text (Text, pack)
+import           Data.Text (Text, pack)
 
 newtype ConfigField = ConfigField { fieldName :: String } deriving (Show, Eq, Ord)
 
@@ -44,6 +44,6 @@ itemBaseDirField :: ConfigField
 itemBaseDirField = ConfigField "baseDir"
 
 itemFilesField :: ConfigField
-itemFilesField = ConfigField "files" 
+itemFilesField = ConfigField "files"
 
 

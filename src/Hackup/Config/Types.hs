@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Hackup.Config.Types ( 
+module Hackup.Config.Types (
                       Config(Config), backupRootDir, defaultKeep, sections,
                       Section(Section), archiveName, archiveDir, keep, items, before, after,
                       Command(Command), command, workingDir, ignoreFailure,
@@ -8,12 +8,12 @@ module Hackup.Config.Types (
                       RawFileSelector(Glob, Regex),
                       FileSelector(FileSelector), runFileSelector, rawFileSelector) where
 
-import Data.Map (Map)
-import Control.Lens (makeLenses)
+import           Control.Lens (makeLenses)
+import           Data.Map     (Map)
 
 data Config = Config { _backupRootDir :: FilePath
                      , _defaultKeep :: Integer
-                     , _sections :: Map String Section 
+                     , _sections :: Map String Section
                      } deriving (Show, Eq)
 
 data Section = Section { _archiveName :: Maybe String
@@ -23,16 +23,16 @@ data Section = Section { _archiveName :: Maybe String
                        , _before :: [Command]
                        , _after :: [Command]
                           } deriving (Show, Eq)
-                       
+
 
 data Command = Command { _command :: String
                        , _workingDir :: Maybe FilePath
-                       , _ignoreFailure :: Bool 
+                       , _ignoreFailure :: Bool
                        } deriving (Show, Eq)
 
 data Item = Item { _itemBaseDir :: FilePath
                  , _itemContents :: Maybe FileSelector
-                 } deriving (Show, Eq) 
+                 } deriving (Show, Eq)
 
 data RawFileSelector = Glob String | Regex String deriving (Show, Eq)
 

@@ -2,13 +2,14 @@
 
 module Hackup.Config.SelectorsTest where
 
-import Test.Framework
-import System.FilePath
-import System.Directory.Layout
-import System.IO.Temp
-import Hackup.Config.Types
-import Hackup.Config.Selectors
-import Distribution.System(buildOS, OS(..))
+import           Distribution.System     (OS (..), buildOS)
+import           System.Directory.Layout
+import           System.FilePath
+import           System.IO.Temp
+import           Test.Framework
+
+import           Hackup.Config.Selectors
+import           Hackup.Config.Types
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
@@ -22,11 +23,11 @@ testLayout1 = do
         file_ "five.txt"
 
 exerciseSelector :: (FilePath -> IO [FilePath]) -> Layout -> ([FilePath] -> IO r) -> IO r
-exerciseSelector sel layout f = 
+exerciseSelector sel layout f =
   withSystemTempDirectory "testtmp" (\ base -> make layout base >> sel base >>= f)
 
 glob :: String -> FilePath -> IO [FilePath]
-glob = runFileSelector . fileSelector . Glob 
+glob = runFileSelector . fileSelector . Glob
 
 testSelector :: (a -> RawFileSelector) -> a -> Layout -> [FilePath] -> IO ()
 testSelector mkSel pat layout = exerciseSelector (runFileSelector . fileSelector . mkSel $ pat) layout . assertEqual

@@ -1,28 +1,28 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE Rank2Types #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE Rank2Types            #-}
 
 module Hackup.Config.Parser where
 
-import Data.Validation
-import qualified Data.Text as Text
-import Data.Yaml (Value, decodeEither)
-import Data.ByteString (ByteString)
-import Data.Maybe (fromMaybe)
-import qualified Data.Map as Map
-import Data.Functor.Identity
-import Data.Foldable (fold)
-import Data.List.NonEmpty (NonEmpty((:|)), intersperse)
-import Control.Applicative
-import Control.Monad
-import Control.Lens
-import Data.Aeson.Lens
-import Data.List.Lens
-import Data.Vector.Lens
-import Data.Text.Lens
-import Hackup.Config.Types
-import Hackup.Config.Fields
-import Hackup.Config.Selectors
+import           Control.Applicative
+import           Control.Lens
+import           Control.Monad
+import           Data.Aeson.Lens
+import           Data.ByteString         (ByteString)
+import           Data.Foldable           (fold)
+import           Data.List.Lens
+import           Data.List.NonEmpty      (NonEmpty ((:|)), intersperse)
+import qualified Data.Map                as Map
+import           Data.Maybe              (fromMaybe)
+import qualified Data.Text               as Text
+import           Data.Text.Lens
+import           Data.Validation
+import           Data.Vector.Lens
+import           Data.Yaml               (Value, decodeEither)
+
+import           Hackup.Config.Fields
+import           Hackup.Config.Selectors
+import           Hackup.Config.Types
 
 
 type V = AccValidation (NonEmpty String)
@@ -31,7 +31,7 @@ failV :: String -> V a
 failV s = _Failure # (s :| [])
 
 eitherV :: (NonEmpty String -> b) -> (a -> b) -> V a -> b
-eitherV f g = either f g . view isoAccValidationEither   
+eitherV f g = either f g . view isoAccValidationEither
 
 bindV :: (a -> V b) -> V a -> V b
 bindV f v = case v ^? _Success of Nothing -> fmap undefined v
@@ -44,13 +44,13 @@ asV err = maybe (failV err) pure
 -- 1. Value -> Maybe Value
 
 fieldKey :: (AsValue s) => ConfigField -> Getter s (Maybe Value)
-fieldKey field = pre . key $ fieldText field 
+fieldKey field = pre . key $ fieldText field
 
 
 -- 2. Maybe Value -> V (m Value) (m being [], Maybe or Identity)
 
 required_ :: ConfigField -> Maybe Value -> V Value
-required_ field =  asV ("missing key '" ++ fieldName field ++ "'")
+required_ field = asV ("missing key '" ++ fieldName field ++ "'")
 
 requiredField :: ConfigField -> Maybe Value -> V (Identity Value)
 requiredField field = fmap Identity . required_ field
@@ -76,33 +76,33 @@ qualifyErrors field vs = vs & traversed %@~ inField'
                     | otherwise = ""
 
 parsedFieldM :: Traversable t => ConfigField -> (a -> V b) -> V (t a) -> V (t b)
-parsedFieldM field p = bindV $ sequenceAOf traverse . qualifyErrors field . fmap p 
+parsedFieldM field p = bindV $ sequenceAOf traverse . qualifyErrors field . fmap p
 
 -- 4. shake
 
 getField :: (AsValue a) => ConfigField -> (Value -> V b) -> Getter a (V b)
 getField field p = fieldKey field . to (
-                     fmap runIdentity . 
-                     parsedFieldM field p . 
+                     fmap runIdentity .
+                     parsedFieldM field p .
                      requiredField field)
 
-getFieldOpt :: AsValue a => ConfigField -> (Value -> V b) -> Getter a (V (Maybe b)) 
+getFieldOpt :: AsValue a => ConfigField -> (Value -> V b) -> Getter a (V (Maybe b))
 getFieldOpt field p = fieldKey field . to (
-                        parsedFieldM field p .  
+                        parsedFieldM field p .
                         optionalField field)
 
-getFieldRep :: AsValue a => ConfigField -> (Value -> V b) -> Getter a (V [b]) 
+getFieldRep :: AsValue a => ConfigField -> (Value -> V b) -> Getter a (V [b])
 getFieldRep field p = fieldKey field . to (
-                        parsedFieldM field p .  
+                        parsedFieldM field p .
                         optionalRepeatedField field)
 
 getFieldRep' :: (AsValue a) => ConfigField -> (Value -> V b) -> Getter a (V [b])
 getFieldRep' field p = fieldKey field . to (
-                     parsedFieldM field p . 
+                     parsedFieldM field p .
                      repeatedField field)
 
 withDefault :: a -> V (Maybe a) -> V a
-withDefault a vma = fromMaybe a <$> vma      
+withDefault a vma = fromMaybe a <$> vma
 
 (.|) :: Getter a (V (Maybe b)) -> b -> Getter a (V b)
 (.|) g a = g . to (withDefault a)
@@ -136,15 +136,15 @@ fileSelectorPrefixes = [ ("glob:", Glob), ("regex:", Regex), ("", Glob) ]
 
 parseRawFileSelector :: AsValue s => s -> Maybe RawFileSelector
 parseRawFileSelector t = (rawFileSelector' <$> fileSelectorPrefixes) ^? (traverse . _Just)
-  where rawFileSelector' (p, fs) = case t ^? (_String . unpacked . prefixed p) 
+  where rawFileSelector' (p, fs) = case t ^? (_String . unpacked . prefixed p)
                                      of Just "" -> Nothing
                                         r       -> fs <$> r
 
 
 rawFileSelectorFromJSON :: AsValue s => s -> V RawFileSelector
-rawFileSelectorFromJSON = 
+rawFileSelectorFromJSON =
   asV "string matching (glob:|regex:)?.+ expected" .
-    parseRawFileSelector              
+    parseRawFileSelector
 
 
 fileSelectorFromJSON :: AsValue s => s -> V FileSelector
@@ -153,14 +153,14 @@ fileSelectorFromJSON = fmap fileSelector . rawFileSelectorFromJSON
 -- Item
 
 itemFromJSON :: AsValue s => s -> V Item
-itemFromJSON v = Item <$> 
+itemFromJSON v = Item <$>
                    v ^. getField itemBaseDirField nonEmptyString <*>
                    v ^. getFieldOpt itemFilesField fileSelectorFromJSON
 -- Command
 
 
 commandFromJSON :: AsValue s => s -> V Command
-commandFromJSON v = Command <$> 
+commandFromJSON v = Command <$>
                       v ^. getField commandField nonEmptyString <*>
                       v ^. getFieldOpt commandWorkingDirField nonEmptyString <*>
                       v ^. getFieldOpt commandIgnoreFailureField bool .| False
@@ -177,7 +177,7 @@ sectionFromJSON v = Section <$>
                       v ^. getFieldRep sectionAfterField commandFromJSON
 
 -- Config
-                      
+
 configFromJSON :: AsValue s => s -> V Config
 configFromJSON v = Config <$>
                      v ^. getField rootDirField nonEmptyString <*>

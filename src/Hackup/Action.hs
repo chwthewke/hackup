@@ -1,7 +1,7 @@
 module Hackup.Action where
 
-import Hackup.Types
-import Hackup.Config
+import           Hackup.Config
+import           Hackup.Types
 
 data Action = Action {} deriving (Show, Eq)
 

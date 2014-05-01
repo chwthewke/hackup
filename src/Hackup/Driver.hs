@@ -1,9 +1,10 @@
 module Hackup.Driver where
 
-import Control.Monad.Trans
-import Hackup.Types
-import Hackup.Opts
-import Hackup.Action
+import           Control.Monad.Trans
+
+import           Hackup.Action
+import           Hackup.Opts
+import           Hackup.Types
 
 runAction :: Opts -> Action -> TryIO [String]
 runAction _ _ = failWith "Failed explicitly at runAction"

@@ -1,9 +1,10 @@
 module Hackup.Opts (Opts, cmdOpts, configFile, dryRun) where
 
-import Hackup.Types
-import Control.Monad
-import Options.Applicative
-import System.Environment
+import           Control.Monad
+import           Options.Applicative
+import           System.Environment
+
+import           Hackup.Types
 
 data Opts = Opts { configFile :: String
                  , dryRun :: Bool

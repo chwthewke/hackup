@@ -4,29 +4,29 @@
 
 module Hackup.Config.ParserTest where
 
-import Test.Framework
+import           Control.Applicative
+import           Control.Lens
+import           Data.Aeson              (Value)
+import           Data.Aeson.Lens
+import           Data.Foldable
+import qualified Data.HashMap.Strict     as HashMap
+import           Data.List               (nub)
+import qualified Data.Map                as Map
+import           Data.Maybe              (fromMaybe)
+import qualified Data.Text               as Text
+import           Data.Text.Lens
+import           Data.Validation
+import qualified Data.Vector             as Vector
+import           Prelude                 hiding (concat)
+import           Test.Framework
 
-import Prelude hiding (concat)
-import Hackup.Config.Fields
-import Hackup.Config.Types
-import Hackup.Config.Parser
-import Hackup.Config.Selectors
-import Control.Applicative
-import Control.Lens
-import Data.Aeson (Value)
-import Data.Aeson.Lens
-import Data.Foldable
-import Data.List (nub)
-import Data.Maybe (fromMaybe)
-import qualified Data.Map as Map
-import qualified Data.Text as Text
-import Data.Text.Lens
-import Data.Validation
-import qualified Data.Vector as Vector
-import qualified Data.HashMap.Strict as HashMap
+import           Hackup.Config.Fields
+import           Hackup.Config.Parser
+import           Hackup.Config.Selectors
+import           Hackup.Config.Types
 
 data ValueResult a = ValueResult { getValue :: Value
-                                 , getResult :: V a 
+                                 , getResult :: V a
                                  } deriving (Show, Eq)
 
 
@@ -38,14 +38,14 @@ defParseProp p va = p v == a
 newtype NonEmptyString = NonEmptyString { getNonEmptyString :: String } deriving (Eq)
 
 instance Arbitrary NonEmptyString where
-  arbitrary = NonEmptyString <$> listOf1 arbitrary 
+  arbitrary = NonEmptyString <$> listOf1 arbitrary
 
 newtype PositiveInteger = PositiveInteger { getPositiveInteger :: Integer } deriving (Eq)
 
 instance Arbitrary PositiveInteger where
-  arbitrary = PositiveInteger <$> arbitrary `suchThat` (0 <) 
+  arbitrary = PositiveInteger <$> arbitrary `suchThat` (0 <)
 
- 
+
 class ArbFromValue a where
   arbFromValue :: Gen (ValueResult a)
 
@@ -60,10 +60,10 @@ mkString :: String -> Value
 mkString = (_String . unpacked #)
 
 mkArray :: [Value] -> Value
-mkArray = (_Array #) . Vector.fromList 
+mkArray = (_Array #) . Vector.fromList
 
 mkObject :: [(String, Value)] -> Value
-mkObject = (_Object #) . HashMap.fromList . (traverse . _1 %~ Text.pack) 
+mkObject = (_Object #) . HashMap.fromList . (traverse . _1 %~ Text.pack)
 
 -- FileSelector
 
@@ -71,7 +71,7 @@ instance ArbFromValue FileSelector where
   arbFromValue = do m      <- listOf1 arbitrary
                     (p, g) <- Test.Framework.elements fileSelectorPrefixes
                     return $ ValueResult (mkString (p ++ m)) (_Success # fileSelector (g m))
-                    
+
 prop_fileSelectorFromJSON :: ValueResult FileSelector -> Bool
 prop_fileSelectorFromJSON = defParseProp fileSelectorFromJSON
 
@@ -126,7 +126,7 @@ instance ArbFromValue Section where
                         traverse getResult itemsv <*>
                         traverse getResult beforev <*>
                         traverse getResult afterv)
-      
+
 prop_sectionFromJSON :: ValueResult Section -> Bool
 prop_sectionFromJSON = defParseProp sectionFromJSON
 
@@ -145,4 +145,4 @@ instance ArbFromValue Config where
 
 prop_configFromJSON :: ValueResult Config -> Bool
 prop_configFromJSON = defParseProp configFromJSON
-                      
+
