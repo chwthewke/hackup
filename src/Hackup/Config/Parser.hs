@@ -2,7 +2,9 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE Rank2Types            #-}
 
-module Hackup.Config.Parser where
+module Hackup.Config.Parser(fileSelectorFromJSON, fileSelectorPrefixes,
+                            itemFromJSON, commandFromJSON, sectionFromJSON,
+                            configFromJSON, parseConfig, V) where
 
 import           Control.Applicative
 import           Control.Lens
@@ -30,9 +32,6 @@ type V = AccValidation (NonEmpty String)
 failV :: String -> V a
 failV s = _Failure # (s :| [])
 
-eitherV :: (NonEmpty String -> b) -> (a -> b) -> V a -> b
-eitherV f g = either f g . view isoAccValidationEither
-
 bindV :: (a -> V b) -> V a -> V b
 bindV f v = case v ^? _Success of Nothing -> fmap undefined v
                                   Just a  -> f a
@@ -57,9 +56,6 @@ requiredField field = fmap Identity . required_ field
 
 optionalField :: ConfigField -> Maybe Value -> V (Maybe Value)
 optionalField _ = pure
-
-repeatedField :: ConfigField -> Maybe Value -> V [Value]
-repeatedField field = bindV array . required_ field
 
 optionalRepeatedField :: ConfigField -> Maybe Value -> V [Value]
 optionalRepeatedField _ = maybe (pure []) array
@@ -95,11 +91,6 @@ getFieldRep :: AsValue a => ConfigField -> (Value -> V b) -> Getter a (V [b])
 getFieldRep field p = fieldKey field . to (
                         parsedFieldM field p .
                         optionalRepeatedField field)
-
-getFieldRep' :: (AsValue a) => ConfigField -> (Value -> V b) -> Getter a (V [b])
-getFieldRep' field p = fieldKey field . to (
-                     parsedFieldM field p .
-                     repeatedField field)
 
 withDefault :: a -> V (Maybe a) -> V a
 withDefault a vma = fromMaybe a <$> vma

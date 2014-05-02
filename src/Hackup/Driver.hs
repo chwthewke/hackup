@@ -1,4 +1,4 @@
-module Hackup.Driver where
+module Hackup.Driver(runActions) where
 
 import           Control.Monad.Trans
 
