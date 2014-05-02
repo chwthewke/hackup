@@ -35,7 +35,7 @@ executable hackup
                    Hackup.Opts,
                    Hackup.Types,
                    Hackup.Config.Parser,
-                   Hackup.Config.Selectors
+                   Hackup.Selectors
 
 test-suite HackupTests
   type:            exitcode-stdio-1.0
@@ -57,8 +57,8 @@ test-suite HackupTests
                    Hackup.Config.Types,
                    Hackup.Config.Parser,
                    Hackup.Config.ParserTest,
-                   Hackup.Config.Selectors,
-                   Hackup.Config.SelectorsTest
+                   Hackup.Selectors,
+                   Hackup.SelectorsTest
   hs-source-dirs:  
                    src,
                    testsuite

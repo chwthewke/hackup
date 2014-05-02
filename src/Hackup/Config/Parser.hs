@@ -8,21 +8,21 @@ import           Control.Applicative
 import           Control.Lens
 import           Control.Monad
 import           Data.Aeson.Lens
-import           Data.ByteString         (ByteString)
-import           Data.Foldable           (fold)
+import           Data.ByteString      (ByteString)
+import           Data.Foldable        (fold)
 import           Data.List.Lens
-import           Data.List.NonEmpty      (NonEmpty ((:|)), intersperse)
-import qualified Data.Map                as Map
-import           Data.Maybe              (fromMaybe)
-import qualified Data.Text               as Text
+import           Data.List.NonEmpty   (NonEmpty ((:|)), intersperse)
+import qualified Data.Map             as Map
+import           Data.Maybe           (fromMaybe)
+import qualified Data.Text            as Text
 import           Data.Text.Lens
 import           Data.Validation
 import           Data.Vector.Lens
-import           Data.Yaml               (Value, decodeEither)
+import           Data.Yaml            (Value, decodeEither)
 
 import           Hackup.Config.Fields
-import           Hackup.Config.Selectors
 import           Hackup.Config.Types
+import           Hackup.Selectors
 
 
 type V = AccValidation (NonEmpty String)
@@ -131,24 +131,20 @@ positiveInt v =
 
 -- FileSelector
 
-fileSelectorPrefixes :: [ (String, String -> RawFileSelector) ]
+fileSelectorPrefixes :: [ (String, String -> FileSelector) ]
 fileSelectorPrefixes = [ ("glob:", Glob), ("regex:", Regex), ("", Glob) ]
 
-parseRawFileSelector :: AsValue s => s -> Maybe RawFileSelector
+parseRawFileSelector :: AsValue s => s -> Maybe FileSelector
 parseRawFileSelector t = (rawFileSelector' <$> fileSelectorPrefixes) ^? (traverse . _Just)
   where rawFileSelector' (p, fs) = case t ^? (_String . unpacked . prefixed p)
                                      of Just "" -> Nothing
                                         r       -> fs <$> r
 
 
-rawFileSelectorFromJSON :: AsValue s => s -> V RawFileSelector
-rawFileSelectorFromJSON =
+fileSelectorFromJSON :: AsValue s => s -> V FileSelector
+fileSelectorFromJSON =
   asV "string matching (glob:|regex:)?.+ expected" .
     parseRawFileSelector
-
-
-fileSelectorFromJSON :: AsValue s => s -> V FileSelector
-fileSelectorFromJSON = fmap fileSelector . rawFileSelectorFromJSON
 
 -- Item
 

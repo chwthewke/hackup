@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -F -pgmF htfpp #-}
 
-module Hackup.Config.SelectorsTest where
+module Hackup.SelectorsTest where
 
 import           Distribution.System     (OS (..), buildOS)
 import           System.Directory.Layout
@@ -8,8 +8,7 @@ import           System.FilePath
 import           System.IO.Temp
 import           Test.Framework
 
-import           Hackup.Config.Selectors
-import           Hackup.Config.Types
+import           Hackup.Selectors
 
 {-# ANN module "HLint: ignore Use camelCase" #-}
 
@@ -26,11 +25,8 @@ exerciseSelector :: (FilePath -> IO [FilePath]) -> Layout -> ([FilePath] -> IO r
 exerciseSelector sel layout f =
   withSystemTempDirectory "testtmp" (\ base -> make layout base >> sel base >>= f)
 
-glob :: String -> FilePath -> IO [FilePath]
-glob = runFileSelector . fileSelector . Glob
-
-testSelector :: (a -> RawFileSelector) -> a -> Layout -> [FilePath] -> IO ()
-testSelector mkSel pat layout = exerciseSelector (runFileSelector . fileSelector . mkSel $ pat) layout . assertEqual
+testSelector :: (a -> FileSelector) -> a -> Layout -> [FilePath] -> IO ()
+testSelector mkSel pat layout = exerciseSelector (runFileSelector . mkSel $ pat) layout . assertEqual
 
 testGlob :: String -> Layout -> [FilePath] -> IO ()
 testGlob = testSelector Glob

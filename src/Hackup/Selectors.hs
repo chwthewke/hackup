@@ -1,6 +1,6 @@
 {-# LANGUAGE PackageImports #-}
 
-module Hackup.Config.Selectors(fileSelector) where
+module Hackup.Selectors(runFileSelector, FileSelector(..)) where
 
 import           Control.Applicative
 import           System.FilePath
@@ -8,7 +8,8 @@ import           System.FilePath.Find (filePath, find)
 import           "Glob" System.FilePath.Glob (compile, match)
 import           Text.Regex.TDFA      ((=~))
 
-import           Hackup.Config.Types
+data FileSelector = Glob String | Regex String deriving (Show, Eq)
+
 
 -- | Returns relative paths inside a directory that match a predicate.
 findRelative :: (FilePath -> Bool) -> FilePath -> IO [FilePath]
@@ -23,9 +24,6 @@ regexSelector :: String -> FilePath -> IO [FilePath]
 regexSelector = findRelative . matchPath
   where matchPath expr path = path =~ expr == path
 
-fileSelector :: RawFileSelector -> FileSelector
-fileSelector sel = FileSelector (fileSelector' sel) sel
-  where fileSelector' (Glob s) = globSelector s
-        fileSelector' (Regex s) = regexSelector s
-
-
+runFileSelector :: FileSelector -> FilePath -> IO [FilePath]
+runFileSelector (Glob s) = globSelector s
+runFileSelector (Regex s) = regexSelector s

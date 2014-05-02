@@ -6,24 +6,24 @@ module Hackup.Config.ParserTest where
 
 import           Control.Applicative
 import           Control.Lens
-import           Data.Aeson              (Value)
+import           Data.Aeson           (Value)
 import           Data.Aeson.Lens
 import           Data.Foldable
-import qualified Data.HashMap.Strict     as HashMap
-import           Data.List               (nub)
-import qualified Data.Map                as Map
-import           Data.Maybe              (fromMaybe)
-import qualified Data.Text               as Text
+import qualified Data.HashMap.Strict  as HashMap
+import           Data.List            (nub)
+import qualified Data.Map             as Map
+import           Data.Maybe           (fromMaybe)
+import qualified Data.Text            as Text
 import           Data.Text.Lens
 import           Data.Validation
-import qualified Data.Vector             as Vector
-import           Prelude                 hiding (concat)
+import qualified Data.Vector          as Vector
+import           Prelude              hiding (concat)
 import           Test.Framework
 
 import           Hackup.Config.Fields
 import           Hackup.Config.Parser
-import           Hackup.Config.Selectors
 import           Hackup.Config.Types
+import           Hackup.Selectors
 
 data ValueResult a = ValueResult { getValue :: Value
                                  , getResult :: V a
@@ -70,7 +70,7 @@ mkObject = (_Object #) . HashMap.fromList . (traverse . _1 %~ Text.pack)
 instance ArbFromValue FileSelector where
   arbFromValue = do m      <- listOf1 arbitrary
                     (p, g) <- Test.Framework.elements fileSelectorPrefixes
-                    return $ ValueResult (mkString (p ++ m)) (_Success # fileSelector (g m))
+                    return $ ValueResult (mkString (p ++ m)) (_Success # g m)
 
 prop_fileSelectorFromJSON :: ValueResult FileSelector -> Bool
 prop_fileSelectorFromJSON = defParseProp fileSelectorFromJSON

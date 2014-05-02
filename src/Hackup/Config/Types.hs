@@ -4,12 +4,12 @@ module Hackup.Config.Types (
                       Config(Config), backupRootDir, defaultKeep, sections,
                       Section(Section), archiveName, archiveDir, keep, items, before, after,
                       Command(Command), command, workingDir, ignoreFailure,
-                      Item(Item), itemBaseDir, itemContents,
-                      RawFileSelector(Glob, Regex),
-                      FileSelector(FileSelector), runFileSelector, rawFileSelector) where
+                      Item(Item), itemBaseDir, itemContents) where
 
-import           Control.Lens (makeLenses)
-import           Data.Map     (Map)
+import           Control.Lens     (makeLenses)
+import           Data.Map         (Map)
+
+import           Hackup.Selectors
 
 data Config = Config { _backupRootDir :: FilePath
                      , _defaultKeep :: Integer
@@ -34,16 +34,6 @@ data Item = Item { _itemBaseDir :: FilePath
                  , _itemContents :: Maybe FileSelector
                  } deriving (Show, Eq)
 
-data RawFileSelector = Glob String | Regex String deriving (Show, Eq)
-
-data FileSelector = FileSelector { runFileSelector :: FilePath -> IO [FilePath]
-                                 , rawFileSelector :: RawFileSelector }
-
-instance Show FileSelector where
-  show = show . rawFileSelector
-
-instance Eq FileSelector where
-  a == b = rawFileSelector a == rawFileSelector b
 
 makeLenses ''Config
 makeLenses ''Section
