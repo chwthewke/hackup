@@ -142,14 +142,14 @@ fileSelectorFromJSON =
 itemFromJSON :: AsValue s => s -> V Item
 itemFromJSON v = Item <$>
                    v ^. getField itemBaseDirField nonEmptyString <*>
-                   v ^. getFieldOpt itemFilesField fileSelectorFromJSON
+                   v ^. getFieldOpt itemFilesField fileSelectorFromJSON .| Glob "**/*"
 -- Command
 
 
 commandFromJSON :: AsValue s => s -> V Command
 commandFromJSON v = Command <$>
                       v ^. getField commandField nonEmptyString <*>
-                      v ^. getFieldOpt commandWorkingDirField nonEmptyString <*>
+                      v ^. getFieldOpt commandWorkingDirField nonEmptyString .| "." <*>
                       v ^. getFieldOpt commandIgnoreFailureField bool .| False
 
 -- Section

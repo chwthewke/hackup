@@ -26,12 +26,12 @@ data Section = Section { _archiveName :: Maybe String
 
 
 data Command = Command { _command :: String
-                       , _workingDir :: Maybe FilePath
+                       , _workingDir :: FilePath
                        , _ignoreFailure :: Bool
                        } deriving (Show, Eq)
 
 data Item = Item { _itemBaseDir :: FilePath
-                 , _itemContents :: Maybe FileSelector
+                 , _itemContents :: FileSelector
                  } deriving (Show, Eq)
 
 

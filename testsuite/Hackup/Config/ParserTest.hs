@@ -55,6 +55,8 @@ instance ArbFromValue a => Arbitrary (ValueResult a) where
 maybeField :: ConfigField -> (a -> Value) -> Maybe a -> [(String, Value)]
 maybeField f v = toList . fmap (\x -> (fieldName f, v x))
 
+getResultOrDefault :: a -> Maybe (ValueResult a) -> V a
+getResultOrDefault a mv = fromMaybe (_Success # a) (getResult <$> mv)
 
 mkString :: String -> Value
 mkString = (_String . unpacked #)
@@ -83,7 +85,7 @@ instance ArbFromValue Item where
                     return $ ValueResult (
                       mkObject $ (fieldName itemBaseDirField, mkString itemBaseDir') :
                                  maybeField itemFilesField getValue fsv) (
-                      Item itemBaseDir' <$> traverse getResult fsv)
+                      Item itemBaseDir' <$> getResultOrDefault (Glob "**/*") fsv)
 
 prop_itemFromJSON :: ValueResult Item -> Bool
 prop_itemFromJSON = defParseProp itemFromJSON
@@ -98,7 +100,7 @@ instance ArbFromValue Command where
                       mkObject $ [(fieldName commandField, _String # Text.pack command')] ++
                                  maybeField commandWorkingDirField mkString workingDir' ++
                                  maybeField commandIgnoreFailureField (_Bool #) ignoreFailure') (
-                      _Success # Command command' workingDir' (fromMaybe False ignoreFailure'))
+                      _Success # Command command' (fromMaybe "." workingDir') (fromMaybe False ignoreFailure'))
 
 prop_commandFromJSON :: ValueResult Command -> Bool
 prop_commandFromJSON = defParseProp commandFromJSON
@@ -134,14 +136,15 @@ prop_sectionFromJSON = defParseProp sectionFromJSON
 
 instance ArbFromValue Config where
   arbFromValue = do backupRootDir' <- getNonEmptyString <$> arbitrary
-                    defaultKeep'   <- getPositiveInteger <$> arbitrary
+                    defaultKeep'   <- fmap getPositiveInteger <$> arbitrary
                     sectionsv      <- resize 4 arbitrary
                     sectionNames   <- map getNonEmptyString <$> arbitrary `suchThat` (\l -> l == nub l)
                     return $ ValueResult (
-                      mkObject $ [(fieldName rootDirField, mkString backupRootDir'),
-                                  (fieldName defaultKeepField, _Integer # defaultKeep')] ++
-                                  zip sectionNames (map getValue sectionsv)) (
-                      Config backupRootDir' defaultKeep' <$> Map.fromList <$> (zip sectionNames <$> traverse getResult sectionsv))
+                      mkObject $ [(fieldName rootDirField, mkString backupRootDir')] ++
+                                 maybeField defaultKeepField (_Integer #) defaultKeep' ++
+                                 zip sectionNames (map getValue sectionsv)) (
+                      Config backupRootDir' (fromMaybe 7 defaultKeep') <$> Map.fromList <$> 
+                        (zip sectionNames <$> traverse getResult sectionsv))
 
 prop_configFromJSON :: ValueResult Config -> Bool
 prop_configFromJSON = defParseProp configFromJSON
