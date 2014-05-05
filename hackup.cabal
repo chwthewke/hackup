@@ -49,8 +49,7 @@ test-suite HackupTests
                    filepath >= 1.3.0.1 && < 1.4,
                    directory >= 1.2.1.0 && < 1.3,
                    directory-layout >= 0.4.0.1 && < 0.5,
-                   temporary >= 1.2.0.2 && < 1.3,
-                   Cabal == 1.18.* 
+                   temporary >= 1.2.0.2 && < 1.3
   other-modules:   
                    Hackup.Config,
                    Hackup.Config.Fields,
