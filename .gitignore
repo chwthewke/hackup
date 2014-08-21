@@ -2,3 +2,5 @@
 .project
 .settings
 dist/
+.cabal-sandbox/
+cabal.sandbox.config

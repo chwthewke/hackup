@@ -1,7 +1,7 @@
 module Main where
 
-import           Prelude       hiding (mapM_)
 import           Data.Foldable
+import           Prelude       hiding (mapM_)
 
 import           Hackup.Action
 import           Hackup.Config
