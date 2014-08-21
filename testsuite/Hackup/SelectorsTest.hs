@@ -25,7 +25,7 @@ testLayout1 = do
 isWindows :: Bool
 isWindows = isWindows' os
   where isWindows' "win32" = True
-        isWindows' "migw32" = True
+        isWindows' "mingw32" = True
         isWindows' "cygwin32" = True
         isWindows' _ = False
 
