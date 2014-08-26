@@ -1,4 +1,4 @@
-module Hackup.Driver.DryRun where
+module Hackup.Driver.DryRun (dryRunDriver) where
 
 import           Control.Error
 import           Control.Lens       hiding (Action)
@@ -7,9 +7,8 @@ import           System.FilePath
 import           Hackup.Action
 import           Hackup.Driver.Core
 
-runAction :: Action -> EitherT String IO [String]
-runAction (CommandAction cmd) = runCommand cmd
-runAction (ArchiveAction arch) = runArchive arch
+dryRunDriver :: Action -> EitherT String IO [String]
+dryRunDriver = driver runCommand runArchive
 
 runCommand :: Command -> EitherT String IO [String]
 runCommand cmd = return [
