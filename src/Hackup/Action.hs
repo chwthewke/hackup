@@ -2,8 +2,8 @@
 
 
 module Hackup.Action(Action(..),
-                     Archive, baseName, targetDirectory, archiveItems, archiveItemsBaseDir, keepPrevious,
-                     Command, workingDir, command, ignoreFailure,
+                     Archive(..), baseName, targetDirectory, archiveItems, archiveItemsBaseDir, keepPrevious,
+                     Command(..), workingDir, command, ignoreFailure,
                      planActions) where
 
 import           Control.Applicative

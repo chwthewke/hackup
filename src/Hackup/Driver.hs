@@ -12,10 +12,10 @@ import           Hackup.Opts
 -- TODO move to Driver.Core? or move Driver.Core.driver here?
 
 runAction :: Opts -> Action -> EitherT String IO [String]
-runAction opt act =
+runAction opt =
   if dryRun opt
-    then DryRun.dryRunDriver act
-    else IODriver.ioDriver act
+    then DryRun.dryRunDriver
+    else IODriver.ioDriver
 
 
 runActions :: Opts -> [Action] -> EitherT String IO [String]

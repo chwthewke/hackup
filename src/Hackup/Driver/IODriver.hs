@@ -9,11 +9,11 @@ import           Control.Lens         hiding (Action)
 import           Control.Monad
 import           Control.Monad.Trans
 import           Data.Attoparsec.Text
-import           Data.List            ({--isPrefixOf, --}sortBy)
+import           Data.List            (sortBy)
 import qualified Data.Text            as T
 import           System.Directory
 import           System.Exit
-import           System.FilePath      ({--splitExtension, takeFileName, --}(</>))
+import           System.FilePath      ((</>))
 import           System.Process       (StdStream (Inherit), createProcess, cwd,
                                        shell, std_err, std_out, waitForProcess)
 
@@ -44,10 +44,11 @@ runArchive arch = do archiveOut <- runArchiveOnly arch
 runArchiveOnly :: Archive -> EitherT String IO [String]
 runArchiveOnly arch = do (baseDir, files) <- selectArchiveFiles arch
                          name <- archiveName arch
-                         _ <- catchIOException $ mkArchive name baseDir files
-                         return [ "Created archive " ++ name ++ " with " ++ show (length files) ++ " files." ]
-  where mkArchive name baseDir files = do _ <- createDirectoryIfMissing True archiveDir
-                                          Tar.create (archiveFullName name) baseDir files
+                         let fullName = archiveFullName name
+                         _ <- catchIOException $ mkArchive fullName baseDir files
+                         return [ "Created archive " ++ fullName ++ " with " ++ show (length files) ++ " files." ]
+  where mkArchive fullName baseDir files = do _ <- createDirectoryIfMissing True archiveDir
+                                              Tar.create fullName baseDir files
         archiveDir = arch ^. targetDirectory
         archiveFullName name = archiveDir </> name
 
@@ -60,7 +61,7 @@ runRotate arch = catchIOException $
                       mapM (deleteArchive . (archiveDir </>)) archivesToDelete
   where archiveDir = arch ^. targetDirectory
         keep = fromIntegral $ arch ^. keepPrevious
-        deleteArchive f = do removeFile f 
+        deleteArchive f = do removeFile f
                              return ("Removed previous archive " ++ f)
 
 namePatternParser :: String -> Parser ()

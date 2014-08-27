@@ -72,7 +72,8 @@ test-suite HackupTests
                    Hackup.SelectorsTest,
                    Hackup.Driver.Core,
                    Hackup.Driver.DryRun,
-                   Hackup.Driver.IODriver
+                   Hackup.Driver.IODriver,
+                   Hackup.Driver.IODriverTest
   hs-source-dirs:  
                    src,
                    testsuite
