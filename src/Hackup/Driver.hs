@@ -4,11 +4,15 @@ import           Control.Error
 import           Control.Monad.Trans
 
 import           Hackup.Action
+import qualified Hackup.Driver.DryRun as DryRun
 import           Hackup.Opts
 
 
 runAction :: Opts -> Action -> EitherT String IO [String]
-runAction opt act =  left "Failed explicitly at runAction"
+runAction opt act = 
+  if dryRun opt 
+    then DryRun.runAction act 
+    else left "Failed explicitly at runAction"
 
 runActions :: Opts -> [Action] -> EitherT String IO ()
 runActions _ [] = return ()

@@ -25,6 +25,8 @@ executable hackup
                    Glob >= 0.7.2 && < 0.8,
                    regex-base >= 0.93.2 && < 0.94,
                    regex-tdfa >= 1.2.0 && < 1.3.0,
+                   time >= 1.4.0 && < 1.5.0,
+                   old-locale >= 1.0.0.5 && < 1.1,
                    errors >= 1.4.6 && < 1.5
   ghc-options:     -Wall
   other-modules:   
@@ -37,7 +39,8 @@ executable hackup
                    Hackup.Config.Parser,
                    Hackup.Selectors,
                    Hackup.Errors,
-                   Hackup.Driver.Core
+                   Hackup.Driver.Core,
+                   Hackup.Driver.DryRun
 
 test-suite HackupTests
   type:            exitcode-stdio-1.0
@@ -60,7 +63,8 @@ test-suite HackupTests
                    Hackup.Config.ParserTest,
                    Hackup.Selectors,
                    Hackup.SelectorsTest,
-                   Hackup.Driver.Core
+                   Hackup.Driver.Core,
+                   Hackup.Driver.DryRun
   hs-source-dirs:  
                    src,
                    testsuite
