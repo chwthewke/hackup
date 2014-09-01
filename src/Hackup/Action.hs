@@ -12,7 +12,6 @@ import           Data.Maybe          (fromMaybe)
 import           System.FilePath
 
 import           Hackup.Config.Types
-import           Hackup.Types
 
 data Archive = Archive { _baseName :: FilePath
                        , _archiveItems :: [Item]
@@ -36,8 +35,8 @@ planSection backupRoot defKeep (name, section) =
     [ArchiveAction $ archiveAction backupRoot defKeep name section] ++
     (CommandAction <$> (section ^. after))
 
-planActions :: Config -> Try [[Action]]
-planActions cfg = return $
+planActions :: Config -> [[Action]]
+planActions cfg =
   planSection (cfg ^. backupRootDir) (cfg ^. defaultKeep) <$>
     cfg ^@.. sections . itraversed
 

@@ -7,10 +7,10 @@ import           Hackup.Action
 import           Hackup.Config
 import           Hackup.Driver
 import           Hackup.Opts
-import           Hackup.Types
+import           Hackup.Errors
 
 main :: IO()
-main = doOrDoNot $ do opts <- cmdOpts
-                      config <- readConfig $ configFile opts
-                      actions <- generalizeTry $ planActions config
-                      mapM_ (runActions opts) actions
+main = handleErrors $ do opts <- cmdOpts
+                         config <- readConfig $ configFile opts
+                         let actions = planActions config
+                         mapM_ (runActions opts) actions

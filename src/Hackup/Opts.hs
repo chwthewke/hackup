@@ -1,13 +1,13 @@
 module Hackup.Opts (Opts, cmdOpts, configFile, dryRun) where
 
+import           Control.Error
 import           Control.Monad
 import           Options.Applicative
 import           System.Environment
 
-import           Hackup.Types
 
 data Opts = Opts { configFile :: String
-                 , dryRun :: Bool
+                 , dryRun     :: Bool
 --                 , quiet :: Bool
                  } deriving (Show, Eq)
 
@@ -34,7 +34,7 @@ parseCommandLine args =
   case execParserPure (prefs idm) parserInfo args
     of Success opts        -> return $ Right opts
        Failure f           -> liftM (Left . fst . execFailure f) getProgName
-       CompletionInvoked _ -> error "unexpected completion invoked"
+       CompletionInvoked _ -> return $ Left "unexpected completion invoked"
 
-cmdOpts :: TryIO Opts
-cmdOpts = ErrorT $ getArgs >>= parseCommandLine
+cmdOpts :: EitherT String IO Opts
+cmdOpts = EitherT $ getArgs >>= parseCommandLine

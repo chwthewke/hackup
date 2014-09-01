@@ -4,9 +4,10 @@ module Hackup.Config (module Hackup.Config.Types,
 
 import           Control.Monad
 import qualified Data.ByteString      as ByteString
+
 import           Hackup.Config.Parser
 import           Hackup.Config.Types
-import           Hackup.Types
+import Hackup.Errors
 
-readConfig :: FilePath -> TryIO Config
-readConfig = ErrorT . liftM parseConfig . ByteString.readFile
+readConfig :: FilePath -> EitherT String IO Config
+readConfig = EitherT . liftM parseConfig . ByteString.readFile
