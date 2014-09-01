@@ -1,9 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 
-module Hackup.Action(Action,
-                     Archive, baseName, archiveItems,  keepPrevious,
-                     Hackup.Config.Types.Command, Hackup.Config.Types.workingDir, Hackup.Config.Types.command, Hackup.Config.Types.ignoreFailure,
+module Hackup.Action(Action(..),
+                     Archive, baseName, archiveItems, archiveItemsBaseDir, keepPrevious,
+                     Command, workingDir, command, ignoreFailure,
                      planActions) where
 
 import           Control.Applicative
@@ -12,10 +12,12 @@ import           Data.Maybe          (fromMaybe)
 import           System.FilePath
 
 import           Hackup.Config.Types
+import           Hackup.Selectors
 
-data Archive = Archive { _baseName :: FilePath
-                       , _archiveItems :: [Item]
-                       , _keepPrevious :: Integer
+data Archive = Archive { _baseName            :: FilePath
+                       , _archiveItemsBaseDir :: FilePath
+                       , _archiveItems        :: [FileSelector]
+                       , _keepPrevious        :: Integer
                        } deriving (Eq, Show)
 
 data Action = CommandAction Command
@@ -24,7 +26,7 @@ data Action = CommandAction Command
 
 archiveAction :: FilePath -> Integer -> String -> Section -> Archive
 archiveAction backupRoot defKeep name section =
-  Archive (archDir </> archName) (section ^. items) keepNum
+  Archive (archDir </> archName) (section ^. itemsBaseDir) (section ^. items) keepNum
   where archDir = fromMaybe backupRoot $ section ^. archiveDir
         archName = fromMaybe name $ section ^. archiveName
         keepNum = fromMaybe defKeep $ section ^. keep

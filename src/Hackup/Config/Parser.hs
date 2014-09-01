@@ -3,7 +3,7 @@
 {-# LANGUAGE Rank2Types            #-}
 
 module Hackup.Config.Parser(fileSelectorFromJSON, fileSelectorPrefixes,
-                            itemFromJSON, commandFromJSON, sectionFromJSON,
+                            commandFromJSON, sectionFromJSON,
                             configFromJSON, parseConfig, V) where
 
 import           Control.Applicative
@@ -137,14 +137,8 @@ fileSelectorFromJSON =
   asV "string matching (glob:|regex:)?.+ expected" .
     parseRawFileSelector
 
--- Item
 
-itemFromJSON :: AsValue s => s -> V Item
-itemFromJSON v = Item <$>
-                   v ^. getField itemBaseDirField nonEmptyString <*>
-                   v ^. getFieldOpt itemFilesField fileSelectorFromJSON .| Glob "**/*"
 -- Command
-
 
 commandFromJSON :: AsValue s => s -> V Command
 commandFromJSON v = Command <$>
@@ -159,7 +153,8 @@ sectionFromJSON v = Section <$>
                       v ^. getFieldOpt sectionArchiveNameField nonEmptyString <*>
                       v ^. getFieldOpt sectionArchiveDirField nonEmptyString <*>
                       v ^. getFieldOpt sectionKeepField positiveInt <*>
-                      v ^. getFieldRep sectionItemsField itemFromJSON <*>
+                      v ^. getField sectionBaseDirField nonEmptyString <*>
+                      v ^. getFieldRep sectionItemsField fileSelectorFromJSON <*>
                       v ^. getFieldRep sectionBeforeField commandFromJSON <*>
                       v ^. getFieldRep sectionAfterField commandFromJSON
 

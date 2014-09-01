@@ -22,6 +22,9 @@ sectionArchiveDirField = ConfigField "targetDir"
 sectionKeepField :: ConfigField
 sectionKeepField = ConfigField "keep"
 
+sectionBaseDirField :: ConfigField
+sectionBaseDirField = ConfigField "baseDir"
+
 sectionItemsField :: ConfigField
 sectionItemsField = ConfigField "contents"
 
@@ -39,11 +42,4 @@ commandWorkingDirField = ConfigField "workingDir"
 
 commandIgnoreFailureField :: ConfigField
 commandIgnoreFailureField = ConfigField "ignoreFailure"
-
-itemBaseDirField :: ConfigField
-itemBaseDirField = ConfigField "baseDir"
-
-itemFilesField :: ConfigField
-itemFilesField = ConfigField "files"
-
 

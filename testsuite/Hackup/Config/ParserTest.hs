@@ -25,7 +25,7 @@ import           Hackup.Config.Parser
 import           Hackup.Config.Types
 import           Hackup.Selectors
 
-data ValueResult a = ValueResult { getValue :: Value
+data ValueResult a = ValueResult { getValue  :: Value
                                  , getResult :: V a
                                  } deriving (Show, Eq)
 
@@ -77,19 +77,6 @@ instance ArbFromValue FileSelector where
 prop_fileSelectorFromJSON :: ValueResult FileSelector -> Bool
 prop_fileSelectorFromJSON = defParseProp fileSelectorFromJSON
 
--- Item
-
-instance ArbFromValue Item where
-  arbFromValue = do fsv          <- arbitrary
-                    itemBaseDir' <- getNonEmptyString <$> arbitrary
-                    return $ ValueResult (
-                      mkObject $ (fieldName itemBaseDirField, mkString itemBaseDir') :
-                                 maybeField itemFilesField getValue fsv) (
-                      Item itemBaseDir' <$> getResultOrDefault (Glob "**/*") fsv)
-
-prop_itemFromJSON :: ValueResult Item -> Bool
-prop_itemFromJSON = defParseProp itemFromJSON
-
 -- Command
 
 instance ArbFromValue Command where
@@ -111,6 +98,7 @@ instance ArbFromValue Section where
   arbFromValue = do archiveName' <- fmap getNonEmptyString <$> arbitrary
                     archiveDir'  <- fmap getNonEmptyString <$> arbitrary
                     keep'        <- fmap getPositiveInteger <$> arbitrary
+                    baseDir'     <- getNonEmptyString <$> arbitrary
                     itemsv       <- resize 4 arbitrary
                     beforev      <- resize 4 arbitrary
                     afterv       <- resize 4 arbitrary
@@ -118,13 +106,15 @@ instance ArbFromValue Section where
                       mkObject $ maybeField sectionArchiveNameField mkString archiveName' ++
                                  maybeField sectionArchiveDirField mkString archiveDir' ++
                                  maybeField sectionKeepField (_Integer #) keep' ++
-                                 [(fieldName sectionItemsField,
+                                 [(fieldName sectionBaseDirField,
+                                   mkString baseDir'),
+                                  (fieldName sectionItemsField,
                                    mkArray $ map getValue itemsv),
                                   (fieldName sectionBeforeField,
                                    mkArray $ map getValue beforev),
                                   (fieldName sectionAfterField,
                                    mkArray $ map getValue afterv)]) (
-                      Section archiveName' archiveDir' keep' <$>
+                      Section archiveName' archiveDir' keep' baseDir' <$>
                         traverse getResult itemsv <*>
                         traverse getResult beforev <*>
                         traverse getResult afterv)
@@ -143,7 +133,7 @@ instance ArbFromValue Config where
                       mkObject $ [(fieldName rootDirField, mkString backupRootDir')] ++
                                  maybeField defaultKeepField (_Integer #) defaultKeep' ++
                                  zip sectionNames (map getValue sectionsv)) (
-                      Config backupRootDir' (fromMaybe 7 defaultKeep') <$> Map.fromList <$> 
+                      Config backupRootDir' (fromMaybe 7 defaultKeep') <$> Map.fromList <$>
                         (zip sectionNames <$> traverse getResult sectionsv))
 
 prop_configFromJSON :: ValueResult Config -> Bool
