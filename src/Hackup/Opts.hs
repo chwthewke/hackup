@@ -1,4 +1,4 @@
-module Hackup.Opts (Opts, cmdOpts, configFile, dryRun) where
+module Hackup.Opts (Opts, cmdOpts, configFile, dryRun, dumpConfig) where
 
 import           Control.Error
 import           Control.Monad
@@ -8,7 +8,7 @@ import           System.Environment
 
 data Opts = Opts { configFile :: String
                  , dryRun     :: Bool
---                 , quiet :: Bool
+                 , dumpConfig :: Bool
                  } deriving (Show, Eq)
 
 parser :: Parser Opts
@@ -22,6 +22,9 @@ parser = Opts
     long "dry-run"
       <> short 'n'
       <> help "don't run the backup, just show what would happen.")
+  <*> switch (
+    long "dump-config" 
+    <> help "dump the internal representation of the config file.")
 
 parserInfo :: ParserInfo Opts
 parserInfo = info (helper <*> parser) (
