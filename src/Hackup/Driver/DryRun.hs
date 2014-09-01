@@ -2,6 +2,7 @@ module Hackup.Driver.DryRun where
 
 import           Control.Error
 import           Control.Lens       hiding (Action)
+import           System.FilePath
 
 import           Hackup.Action
 import           Hackup.Driver.Core
@@ -16,10 +17,10 @@ runCommand cmd = return [
   ]
 
 runArchive :: Archive -> EitherT String IO [String]
-runArchive arch = do (baseDir, items) <- selectArchiveFiles arch
+runArchive arch = do (baseDir, files) <- selectArchiveFiles arch
                      name <- archiveName arch
-                     return $ describeArchive name baseDir items (arch ^. keepPrevious)
-  where describeArchive name baseDir items keep =
-          ("Archive " ++ show (length items) ++ " item(s) from " ++ baseDir ++ " to " ++ name) :
-            map ("  " ++) items ++ ["Keep " ++ show keep ++ " previous archives"]
+                     return $ describeArchive ((arch ^. targetDirectory) </> name) baseDir files (arch ^. keepPrevious)
+  where describeArchive name baseDir files keep =
+          ("Archive " ++ show (length files) ++ " file(s) from " ++ baseDir ++ " to " ++ name) :
+            map ("  " ++) files ++ ["Keep " ++ show keep ++ " previous archives"]
 

@@ -2,19 +2,19 @@
 
 
 module Hackup.Action(Action(..),
-                     Archive, baseName, archiveItems, archiveItemsBaseDir, keepPrevious,
+                     Archive, baseName, targetDirectory, archiveItems, archiveItemsBaseDir, keepPrevious,
                      Command, workingDir, command, ignoreFailure,
                      planActions) where
 
 import           Control.Applicative
 import           Control.Lens        hiding (Action)
 import           Data.Maybe          (fromMaybe)
-import           System.FilePath
 
 import           Hackup.Config.Types
 import           Hackup.Selectors
 
 data Archive = Archive { _baseName            :: FilePath
+                       , _targetDirectory     :: FilePath
                        , _archiveItemsBaseDir :: FilePath
                        , _archiveItems        :: [FileSelector]
                        , _keepPrevious        :: Integer
@@ -26,7 +26,7 @@ data Action = CommandAction Command
 
 archiveAction :: FilePath -> Integer -> String -> Section -> Archive
 archiveAction backupRoot defKeep name section =
-  Archive (archDir </> archName) (section ^. itemsBaseDir) (section ^. items) keepNum
+  Archive archName archDir (section ^. itemsBaseDir) (section ^. items) keepNum
   where archDir = fromMaybe backupRoot $ section ^. archiveDir
         archName = fromMaybe name $ section ^. archiveName
         keepNum = fromMaybe defKeep $ section ^. keep
